@@ -1,7 +1,30 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
+import NewTodoInput from "./components/NewTodoInput";
+import TasksList from "./components/TasksList";
+
 export default function App() {
+  const [todos, setTodos] = useState<{ id: number; todo: string }[]>([]);
+  const [newTodo, setNewtodo] = useState("");
+  const [editingTaskId, setEditingTaskID] = useState<number | null>(null);
+
+  function editButtonClick(task: { id: number; todo: string }) {
+    setEditingTaskID(task.id);
+    setNewtodo(task.todo);
+  }
+
+  function editFunc() {
+    const editingTaskIndex = todos
+      .map((todo) => todo.id)
+      .indexOf(editingTaskId || 0);
+    todos[editingTaskIndex].todo = newTodo;
+    setTodos(todos);
+    localStorage.setItem("todos", JSON.stringify(todos));
+    setEditingTaskID(null);
+    setNewtodo("");
+  }
+
   function addTask() {
     if (newTodo != "") {
       setTodos((prev) => {
@@ -14,19 +37,17 @@ export default function App() {
       alert("Task can not be empty");
     }
   }
-
-  function handleEnterKey(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.key.toLocaleUpperCase() == "ENTER") {
-      addTask();
-    }
-  }
-
   useEffect(() => {
     setTodos(JSON.parse(localStorage.getItem("todos") || "[]"));
   }, []);
 
-  const [newTodo, setNewtodo] = useState("");
-  const [todos, setTodos] = useState<{ id: number; todo: string }[]>([]);
+  function deleteTask(taskID: number) {
+    setTodos((prev) => {
+      const current = prev.filter((todo) => todo.id != taskID);
+      localStorage.setItem("todos", JSON.stringify(current));
+      return current;
+    });
+  }
 
   return (
     <>
@@ -34,32 +55,19 @@ export default function App() {
         <div className="header">
           <h1>To Do List</h1>
         </div>
-        <div className="todo-input">
-          <input
-            value={newTodo}
-            type="text"
-            placeholder="Enter a task"
-            onInput={(event: React.FormEvent<HTMLInputElement>) =>
-              setNewtodo(event.currentTarget.value)
-            }
-            onKeyDown={handleEnterKey}
-          />
-          <button onClick={addTask}>Add Task</button>
-        </div>
-        <div className="tasks">
-          <ul>
-            {todos.map((todo) => (
-              <li className="task" key={todo.id}>
-                <h4>{todo.todo}</h4>
-                <div className="task-actions">
-                  <button>Edit</button>
-                  <button>Delete</button>
-                </div>
-              </li>
-            ))}
-            {todos.length == 0 && <h4 className="not-found">No tasks found</h4>}
-          </ul>
-        </div>
+
+        <NewTodoInput
+          editFunc={editFunc}
+          editID={editingTaskId}
+          val={newTodo}
+          setVal={setNewtodo}
+          addFunc={addTask}
+        />
+        <TasksList
+          todos={todos}
+          editFunc={editButtonClick}
+          deleteFunc={deleteTask}
+        />
       </div>
     </>
   );
