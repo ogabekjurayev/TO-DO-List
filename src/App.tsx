@@ -26,7 +26,7 @@ export default function App() {
   }
 
   function addTask() {
-    if (newTodo != "") {
+    if (newTodo != "" && !/^\d+$/.test(newTodo)) {
       setTodos((prev) => {
         const current = [...prev, { id: Math.random(), todo: newTodo }];
         localStorage.setItem("todos", JSON.stringify(current));
@@ -34,7 +34,7 @@ export default function App() {
         return current;
       });
     } else {
-      alert("Task can not be empty");
+      alert("Task should contian at least one letter");
     }
   }
   useEffect(() => {
