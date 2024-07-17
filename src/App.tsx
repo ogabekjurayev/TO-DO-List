@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-
 import NewTodoInput from "./components/NewTodoInput";
 import TasksList from "./components/TasksList";
 
